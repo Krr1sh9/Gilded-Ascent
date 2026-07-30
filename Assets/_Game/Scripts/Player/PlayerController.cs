@@ -186,4 +186,13 @@ public class PlayerController : MonoBehaviour
     {
         externalMotion += velocity;
     }
+
+    /// <summary>
+    /// Replaces the current vertical velocity with an externally supplied
+    /// upward velocity.
+    /// </summary>
+    public void Launch(float upwardVelocity)
+    {
+        verticalVelocity = upwardVelocity;
+    }
 }
