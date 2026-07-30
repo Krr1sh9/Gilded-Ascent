@@ -7,7 +7,10 @@ using UnityEngine;
 [RequireComponent(typeof(Collider))]
 public class Checkpoint : MonoBehaviour
 {
+    [Header("References")]
     [SerializeField] private Transform respawnPoint;
+    [SerializeField] private Renderer checkpointRenderer;
+    [SerializeField] private Material activatedMaterial;
 
     private CheckpointManager checkpointManager;
     private bool activated;
@@ -44,5 +47,10 @@ public class Checkpoint : MonoBehaviour
 
         checkpointManager.SetCheckpoint(position);
         activated = true;
+
+        if (checkpointRenderer != null && activatedMaterial != null)
+        {
+            checkpointRenderer.sharedMaterial = activatedMaterial;
+        }
     }
 }
