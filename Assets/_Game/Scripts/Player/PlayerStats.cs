@@ -26,13 +26,6 @@ public class PlayerStats : MonoBehaviour
     // Stores the time at which the player can next receive damage.
     private float invulnerableUntil;
 
-    private CheckpointManager checkpointManager;
-
-    private void Awake()
-    {
-        checkpointManager = FindFirstObjectByType<CheckpointManager>();
-    }
-
     private void Start()
     {
         Health = maxHealth;
@@ -84,23 +77,12 @@ public class PlayerStats : MonoBehaviour
     }
 
     /// <summary>
-    /// Restores the player's resources, stops oxygen loss and returns the player
-    /// to the current scene checkpoint.
+    /// Restores health and oxygen after either resource is depleted.
     /// </summary>
     public void Die()
     {
         Health = maxHealth;
         Oxygen = maxOxygen;
-        OxygenDraining = false;
-        invulnerableUntil = Time.time + 1f;
-
         OnStatsChanged?.Invoke();
-
-        if (checkpointManager == null)
-        {
-            checkpointManager = FindFirstObjectByType<CheckpointManager>();
-        }
-
-        checkpointManager?.RespawnPlayer();
     }
 }
