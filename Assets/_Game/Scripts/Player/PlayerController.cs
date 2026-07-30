@@ -214,4 +214,20 @@ public class PlayerController : MonoBehaviour
     {
         slipperiness = Mathf.Clamp01(amount);
     }
+
+    /// <summary>
+    /// Moves the player directly to a world-space position and clears stored
+    /// movement so momentum does not continue after teleporting.
+    /// </summary>
+    public void TeleportTo(Vector3 position)
+    {
+        controller.enabled = false;
+        transform.position = position;
+        controller.enabled = true;
+
+        horizontalVelocity = Vector3.zero;
+        verticalVelocity = 0f;
+        externalMotion = Vector3.zero;
+        slipperiness = 0f;
+    }
 }
