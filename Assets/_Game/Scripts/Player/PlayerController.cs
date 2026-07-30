@@ -1,10 +1,10 @@
 using UnityEngine;
 
 /// <summary>
-/// Provides first-person walking, sprinting, crouching and jumping with
+/// Provides first person walking, sprinting, crouching and jumping with
 /// smoothed horizontal acceleration, custom gravity and a capped downward speed.
 ///
-/// Also accepts movement supplied by moving platforms.
+/// Also accepts carried movement and temporary changes caused by slippery surfaces.
 /// </summary>
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : MonoBehaviour
@@ -49,6 +49,9 @@ public class PlayerController : MonoBehaviour
 
     // Velocity supplied by another object for the next movement update.
     private Vector3 externalMotion;
+
+    // Temporary influence applied by a slippery surface.
+    private float slipperiness;
 
     private bool isSprinting;
     private bool isCrouching;
@@ -107,10 +110,17 @@ public class PlayerController : MonoBehaviour
             (transform.right * moveInput.x + transform.forward * moveInput.y)
             * targetSpeed;
 
+        // Slipperiness reduces acceleration so existing momentum lasts longer.
+        float effectiveAcceleration = Mathf.Lerp(
+            acceleration,
+            acceleration * 0.15f,
+            slipperiness
+        );
+
         horizontalVelocity = Vector3.Lerp(
             horizontalVelocity,
             targetVelocity,
-            acceleration * Time.deltaTime
+            effectiveAcceleration * Time.deltaTime
         );
 
         // Apply gravity and limit the maximum downward velocity.
@@ -136,6 +146,7 @@ public class PlayerController : MonoBehaviour
 
         // External movement must be supplied again for every affected frame.
         externalMotion = Vector3.zero;
+        slipperiness = 0f;
     }
 
     /// <summary>
@@ -194,5 +205,13 @@ public class PlayerController : MonoBehaviour
     public void Launch(float upwardVelocity)
     {
         verticalVelocity = upwardVelocity;
+    }
+
+    /// <summary>
+    /// Sets the temporary influence of a slippery surface on acceleration.
+    /// </summary>
+    public void SetSlippery(float amount)
+    {
+        slipperiness = Mathf.Clamp01(amount);
     }
 }
