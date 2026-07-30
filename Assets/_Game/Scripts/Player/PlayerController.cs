@@ -3,6 +3,8 @@ using UnityEngine;
 /// <summary>
 /// Provides first-person walking, sprinting, crouching and jumping with
 /// smoothed horizontal acceleration, custom gravity and a capped downward speed.
+///
+/// Also accepts movement supplied by moving platforms.
 /// </summary>
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : MonoBehaviour
@@ -44,6 +46,9 @@ public class PlayerController : MonoBehaviour
     private Vector2 moveInput;
     private Vector3 horizontalVelocity;
     private float verticalVelocity;
+
+    // Velocity supplied by another object for the next movement update.
+    private Vector3 externalMotion;
 
     private bool isSprinting;
     private bool isCrouching;
@@ -124,9 +129,13 @@ public class PlayerController : MonoBehaviour
 
         Vector3 motion =
             horizontalVelocity
-            + Vector3.up * verticalVelocity;
+            + Vector3.up * verticalVelocity
+            + externalMotion;
 
         controller.Move(motion * Time.deltaTime);
+
+        // External movement must be supplied again for every affected frame.
+        externalMotion = Vector3.zero;
     }
 
     /// <summary>
@@ -168,5 +177,13 @@ public class PlayerController : MonoBehaviour
 
             playerCamera.localPosition = cameraPosition;
         }
+    }
+
+    /// <summary>
+    /// Adds world-space movement inherited from an external object.
+    /// </summary>
+    public void AddExternalMotion(Vector3 velocity)
+    {
+        externalMotion += velocity;
     }
 }
