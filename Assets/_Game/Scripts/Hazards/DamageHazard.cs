@@ -1,19 +1,28 @@
 using UnityEngine;
 
 /// <summary>
-/// Applies a fixed amount of damage when the player enters this trigger.
+/// Either applies fixed damage or immediately respawns the player when entered.
 /// </summary>
 [RequireComponent(typeof(Collider))]
 public class DamageHazard : MonoBehaviour
 {
     [SerializeField] private int damage = 25;
+    [SerializeField] private bool respawnImmediately;
 
     private void OnTriggerEnter(Collider other)
     {
-        // Only objects containing PlayerStats can receive damage.
-        if (other.TryGetComponent(out PlayerStats playerStats))
+        if (!other.TryGetComponent(out PlayerStats playerStats))
         {
-            playerStats.TakeDamage(damage);
+            return;
         }
+
+        // Fall volumes bypass normal damage and trigger the existing death response.
+        if (respawnImmediately)
+        {
+            playerStats.Die();
+            return;
+        }
+
+        playerStats.TakeDamage(damage);
     }
 }
