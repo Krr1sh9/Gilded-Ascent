@@ -55,6 +55,7 @@ public class PlayerController : MonoBehaviour
 
     private bool isSprinting;
     private bool isCrouching;
+    private bool crouchInputHeld;
 
     /// <summary>
     /// Caches the CharacterController, creates the input-action wrapper and
@@ -67,8 +68,17 @@ public class PlayerController : MonoBehaviour
 
         controls.Player.Jump.performed += _ => TryJump();
 
-        controls.Player.Crouch.performed += _ => SetCrouch(true);
-        controls.Player.Crouch.canceled += _ => SetCrouch(false);
+        controls.Player.Crouch.performed += _ =>
+        {
+            crouchInputHeld = true;
+            SetCrouch(true);
+        };
+
+        controls.Player.Crouch.canceled += _ =>
+        {
+            crouchInputHeld = false;
+            SetCrouch(false);
+        };
 
         controls.Player.Sprint.performed += _ => isSprinting = true;
         controls.Player.Sprint.canceled += _ => isSprinting = false;
@@ -96,6 +106,13 @@ public class PlayerController : MonoBehaviour
     private void Update()
     {
         moveInput = controls.Player.Move.ReadValue<Vector2>();
+
+        // Keep trying to stand after crouch is released. SetCrouch prevents the
+        // change until the space above the player is clear.
+        if (isCrouching && !crouchInputHeld)
+        {
+            SetCrouch(false);
+        }
 
         // Crouching takes priority over sprinting when selecting movement speed.
         float targetSpeed = isCrouching
@@ -168,6 +185,11 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private void SetCrouch(bool crouch)
     {
+        if (!crouch && !HasStandingClearance())
+        {
+            return;
+        }
+
         isCrouching = crouch;
 
         // Keep the lower edge of the collider aligned with the ground when its
@@ -188,6 +210,56 @@ public class PlayerController : MonoBehaviour
 
             playerCamera.localPosition = cameraPosition;
         }
+    }
+
+    /// <summary>
+    /// Checks the space that the upper part of the standing collider would occupy.
+    /// The player's own colliders and trigger volumes are ignored.
+    /// </summary>
+    private bool HasStandingClearance()
+    {
+        if (controller.height >= standHeight)
+        {
+            return true;
+        }
+
+        float castRadius = Mathf.Max(0.01f, controller.radius - 0.01f);
+
+        Vector3 controllerBottom = transform.TransformPoint(
+            controller.center - Vector3.up * (controller.height * 0.5f)
+        );
+
+        Vector3 castOrigin =
+            controllerBottom
+            + transform.up * (controller.height - controller.radius);
+
+        float castDistance = standHeight - controller.height;
+
+        RaycastHit[] hits = Physics.SphereCastAll(
+            castOrigin,
+            castRadius,
+            transform.up,
+            castDistance,
+            Physics.AllLayers,
+            QueryTriggerInteraction.Ignore
+        );
+
+        foreach (RaycastHit hit in hits)
+        {
+            Transform hitTransform = hit.collider.transform;
+
+            bool isPlayerCollider =
+                hit.collider == controller
+                || hitTransform == transform
+                || hitTransform.IsChildOf(transform);
+
+            if (!isPlayerCollider)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /// <summary>

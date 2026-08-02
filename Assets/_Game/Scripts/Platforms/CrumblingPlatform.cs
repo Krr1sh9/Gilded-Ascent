@@ -43,14 +43,22 @@ public class CrumblingPlatform : MonoBehaviour
         triggered = true;
         float elapsedTime = 0f;
 
-        // Offset the platform slightly each frame to warn the player.
+        // Shake horizontally so the collider's top surface remains at a stable
+        // height and does not interrupt the player's grounded state.
         while (elapsedTime < shakeDuration)
         {
             elapsedTime += Time.deltaTime;
 
+            Vector2 horizontalShake =
+                Random.insideUnitCircle * shakeAmount;
+
             transform.position =
                 startingPosition
-                + Random.insideUnitSphere * shakeAmount;
+                + new Vector3(
+                    horizontalShake.x,
+                    0f,
+                    horizontalShake.y
+                );
 
             yield return null;
         }
