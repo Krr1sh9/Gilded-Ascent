@@ -9,13 +9,16 @@ EditorBuildSettings:
     path: Assets/Scenes/Level1.unity
     guid: 064bfced9fb8d8d468103e0196f482bd
   - enabled: 1
+    path: Assets/_Game/Scenes/MainMenu.unity
+    guid: 1f552349d43ccdf4096e5dd2258222ab
+  - enabled: 1
     path: Assets/_Game/Scenes/Level1_Graveyard.unity
     guid: 33947ecf4053bdc4799227862505289b
   - enabled: 1
     path: Assets/_Game/Scenes/Level2_Ascent.unity
     guid: fbf6f7250ded19c46aba35da2ac24b10
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
-    guid: 9fc0d4010bbf28b4594072e72b8655ab
+    path: Assets/_Game/Scenes/WinScreen.unity
+    guid: 51e14bd15a11191419d473e822ea8c38
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0

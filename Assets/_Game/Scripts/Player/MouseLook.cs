@@ -2,53 +2,51 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// Handles first-person mouse look using the physical mouse while filtering
-/// abnormal input spikes and limiting the camera's vertical rotation.
+/// Handles stable first-person mouse look using a physical mouse.
 /// </summary>
 public class MouseLook : MonoBehaviour
 {
+    [Header("Camera")]
     [SerializeField] private Transform cameraTransform;
 
-    // Mouse delta is already measured per input update, so it should not be
-    // multiplied by Time.deltaTime.
-    [SerializeField] private float baseSensitivity = 0.08f;
+    [Header("Sensitivity")]
+    [SerializeField] private float baseSensitivity = 0.05f;
 
+    [Header("Vertical Rotation")]
     [SerializeField] private float minPitch = -80f;
     [SerializeField] private float maxPitch = 80f;
 
-    // Prevents an abnormal input event from rotating the camera by a large
-    // amount in one frame.
+    [Header("Input Protection")]
     [SerializeField] private float maximumDeltaPerFrame = 100f;
+
+    public float Sensitivity => baseSensitivity;
 
     private PlayerControls controls;
     private float pitch;
     private bool ignoreNextLookFrame;
 
-    /// <summary>
-    /// Creates the input wrapper, restricts it to a physical mouse and records
-    /// the camera's starting pitch.
-    /// </summary>
+    // Creates the input controls and records the camera's starting pitch.
     private void Awake()
     {
         controls = new PlayerControls();
         RestrictInputToPhysicalMouse();
 
-        if (cameraTransform != null)
+        if (cameraTransform == null)
         {
-            pitch = cameraTransform.localEulerAngles.x;
-
-            if (pitch > 180f)
-            {
-                pitch -= 360f;
-            }
-
-            pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
+            return;
         }
+
+        pitch = cameraTransform.localEulerAngles.x;
+
+        if (pitch > 180f)
+        {
+            pitch -= 360f;
+        }
+
+        pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
     }
 
-    /// <summary>
-    /// Prevents a VirtualMouse device from controlling first-person camera look.
-    /// </summary>
+    // Prevents a virtual mouse from controlling the first-person camera.
     private void RestrictInputToPhysicalMouse()
     {
         foreach (InputDevice device in InputSystem.devices)
@@ -68,9 +66,7 @@ public class MouseLook : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Enables input and locks the cursor while the component is active.
-    /// </summary>
+    // Enables mouse input and locks the cursor.
     private void OnEnable()
     {
         controls.Enable();
@@ -81,9 +77,7 @@ public class MouseLook : MonoBehaviour
         ignoreNextLookFrame = true;
     }
 
-    /// <summary>
-    /// Disables input and releases the cursor when the component is inactive.
-    /// </summary>
+    // Disables mouse input and releases the cursor.
     private void OnDisable()
     {
         controls.Disable();
@@ -92,10 +86,7 @@ public class MouseLook : MonoBehaviour
         Cursor.visible = true;
     }
 
-    /// <summary>
-    /// Ignores the first mouse-delta event after the game regains focus because
-    /// cursor locking can sometimes produce an unusually large value.
-    /// </summary>
+    // Ignores the first mouse movement after the game regains focus.
     private void OnApplicationFocus(bool hasFocus)
     {
         if (hasFocus)
@@ -104,9 +95,13 @@ public class MouseLook : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Reads physical mouse movement and applies horizontal and vertical look.
-    /// </summary>
+    // Applies a safe sensitivity value supplied by the Settings slider.
+    public void SetSensitivity(float sensitivity)
+    {
+        baseSensitivity = Mathf.Clamp(sensitivity, 0.01f, 0.15f);
+    }
+
+    // Reads mouse movement and rotates the Player and camera.
     private void Update()
     {
         if (cameraTransform == null)
@@ -120,8 +115,7 @@ public class MouseLook : MonoBehaviour
             return;
         }
 
-        Vector2 rawLookInput =
-            controls.Player.Look.ReadValue<Vector2>();
+        Vector2 rawLookInput = controls.Player.Look.ReadValue<Vector2>();
 
         bool inputIsInvalid =
             float.IsNaN(rawLookInput.x)
@@ -139,16 +133,15 @@ public class MouseLook : MonoBehaviour
             maximumDeltaPerFrame
         );
 
+        // Raw mouse delta is already measured per input update.
         Vector2 lookInput = rawLookInput * baseSensitivity;
 
-        // Rotate the Player horizontally.
         transform.Rotate(
             Vector3.up,
             lookInput.x,
             Space.Self
         );
 
-        // Rotate only the camera vertically.
         pitch = Mathf.Clamp(
             pitch - lookInput.y,
             minPitch,

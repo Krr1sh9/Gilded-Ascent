@@ -191,9 +191,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cameraTransform: {fileID: 6251541208217507039}
-  baseSensitivity: 12
+  baseSensitivity: 0.05
   minPitch: -80
   maxPitch: 80
+  maximumDeltaPerFrame: 100
 --- !u!114 &7490571683870260585
 MonoBehaviour:
   m_ObjectHideFlags: 0

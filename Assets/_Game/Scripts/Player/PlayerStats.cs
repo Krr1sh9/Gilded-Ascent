@@ -1,5 +1,5 @@
-using UnityEngine;
 using System;
+using UnityEngine;
 
 /// <summary>
 /// Tracks the player's health and oxygen, notifies listeners when either value
@@ -42,11 +42,53 @@ public class PlayerStats : MonoBehaviour
 
     private void Update()
     {
+        if (!OxygenDraining)
+        {
+            return;
+        }
+
+        Oxygen -= oxygenDrainPerSecond * Time.deltaTime;
+        Oxygen = Mathf.Max(0f, Oxygen);
+        OnStatsChanged?.Invoke();
+
+        if (Oxygen <= 0f)
+        {
+            Die();
+        }
+    }
+
+    /// <summary>
+    /// Begins reducing oxygen every frame.
+    /// </summary>
+    public void StartOxygenDrain()
+    {
         if (OxygenDraining)
         {
-            Oxygen -= oxygenDrainPerSecond * Time.deltaTime;
+            return;
+        }
+
+        OxygenDraining = true;
+        OnStatsChanged?.Invoke();
+    }
+
+    /// <summary>
+    /// Stops oxygen loss and optionally restores oxygen to its maximum value.
+    /// </summary>
+    public void StopOxygenDrain(bool restoreOxygen)
+    {
+        bool statsChanged = OxygenDraining;
+
+        OxygenDraining = false;
+
+        if (restoreOxygen && Oxygen < maxOxygen)
+        {
+            Oxygen = maxOxygen;
+            statsChanged = true;
+        }
+
+        if (statsChanged)
+        {
             OnStatsChanged?.Invoke();
-            if (Oxygen <= 0f) { Oxygen = 0f; Die(); }
         }
     }
 
@@ -56,13 +98,20 @@ public class PlayerStats : MonoBehaviour
     /// </summary>
     public void TakeDamage(int amount)
     {
-        if (Time.time < invulnerableUntil) return;
+        if (Time.time < invulnerableUntil)
+        {
+            return;
+        }
+
         invulnerableUntil = Time.time + 1f;
 
         Health -= amount;
         OnStatsChanged?.Invoke();
 
-        if (Health <= 0) Die();
+        if (Health <= 0)
+        {
+            Die();
+        }
     }
 
     /// <summary>
@@ -83,9 +132,6 @@ public class PlayerStats : MonoBehaviour
         OnStatsChanged?.Invoke();
     }
 
-    /// <summary>
-    /// Restores health and oxygen after either resource is depleted.
-    /// </summary>
     /// <summary>
     /// Restores the player's resources and returns them to the current checkpoint.
     /// </summary>
