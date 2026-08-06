@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// Registers a new respawn position when the player enters the trigger.
+/// Registers a new respawn position and updates the checkpoint visuals.
 /// Each checkpoint can only activate once.
 /// </summary>
 [RequireComponent(typeof(Collider))]
@@ -11,14 +11,20 @@ public class Checkpoint : MonoBehaviour
     [SerializeField] private Transform respawnPoint;
     [SerializeField] private Renderer checkpointRenderer;
     [SerializeField] private Material activatedMaterial;
+    [SerializeField] private Light activatedLight;
 
     private CheckpointManager checkpointManager;
     private bool activated;
 
     private void Awake()
     {
-        // Find the manager responsible for storing the current respawn position.
+        // Find the manager and ensure the optional activation light starts disabled.
         checkpointManager = FindFirstObjectByType<CheckpointManager>();
+
+        if (activatedLight != null)
+        {
+            activatedLight.enabled = false;
+        }
     }
 
     private void OnTriggerEnter(Collider other)
@@ -51,6 +57,11 @@ public class Checkpoint : MonoBehaviour
         if (checkpointRenderer != null && activatedMaterial != null)
         {
             checkpointRenderer.sharedMaterial = activatedMaterial;
+        }
+
+        if (activatedLight != null)
+        {
+            activatedLight.enabled = true;
         }
     }
 }
