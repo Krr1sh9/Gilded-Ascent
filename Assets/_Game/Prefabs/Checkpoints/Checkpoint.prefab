@@ -213,3 +213,4 @@ MonoBehaviour:
   respawnPoint: {fileID: 2414495359344689528}
   checkpointRenderer: {fileID: 4770745808292124684}
   activatedMaterial: {fileID: 2100000, guid: eaa5bd44b7fa4e64cbb48e7fe1aeb289, type: 2}
+  activatedLight: {fileID: 0}
